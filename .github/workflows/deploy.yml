@@ -1,0 +1,53 @@
+name: Deploy to VPS (Structure Custom)
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Récupération du code
+        uses: actions/checkout@v4
+
+      - name: 🚚 Copie du code source (Front)
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          source: "."
+          # On envoie tout le code dans le dossier FRONT
+          target: "/vps-1-sites/open-bar-front"
+          rm: false
+
+      - name: 🚀 Mise en place Orchestrator & Build
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          script: |
+            # 1. On s'assure que les dossiers existent
+            mkdir -p /vps-1-sites/openbar-orchestrator
+            mkdir -p /vps-1-sites/openbar-front
+
+            # 2. On déplace le docker-compose.yml du dossier Front vers Orchestrator
+            # (Car git l'a déposé dans Front avec le reste du code)
+            cp /vps-1-sites/openbar-front/docker-compose.yml /vps-1-sites/openbar-orchestrator/docker-compose.yml
+            
+            # 3. On va dans le dossier Orchestrator pour lancer les commandes
+            cd /vps-1-sites/openbar-orchestrator
+
+            # 4. On crée le dossier de données s'il n'existe pas
+            mkdir -p pb_data
+
+            # 5. On lance le build
+            # Docker va lire "context: ../openbar-front" et trouvera les fichiers !
+            docker compose up -d --build --remove-orphans
+            
+            # Nettoyage
+            docker image prune -f
