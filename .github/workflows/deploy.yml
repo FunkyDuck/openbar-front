@@ -43,7 +43,7 @@ jobs:
             cd /vps-1-sites/openbar-orchestrator
 
             # 4. On crée le dossier de données s'il n'existe pas
-            mkdir -p pb_data
+            mkdir -p openbar_data
 
             # 5. On lance le build
             # Docker va lire "context: ../openbar-front" et trouvera les fichiers !

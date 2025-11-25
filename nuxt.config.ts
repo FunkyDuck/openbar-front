@@ -2,7 +2,7 @@
 export default defineNuxtConfig({
     devtools: { enabled: true },
     compatibilityDate: '2025-11-19',
-    modules: ['@nuxtjs/tailwindcss'],
+    modules: ['@nuxtjs/tailwindcss', '@nuxt/image'],
     nitro: {
         preset: 'node-server'
     },

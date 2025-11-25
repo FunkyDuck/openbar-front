@@ -8,7 +8,9 @@ defineProps<{
 </script>
 
 <template>
-  <div class="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden border border-slate-100">
+  <NuxtLink
+      :to="`/drinks/${drink.id}`"
+      class="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden border border-slate-100">
     <!-- Image (Zone haute) -->
     <div class="h-48 bg-slate-100 relative overflow-hidden group">
       <img
@@ -53,5 +55,5 @@ defineProps<{
         </span>
       </div>
     </div>
-  </div>
+  </NuxtLink>
 </template>
