@@ -1,6 +1,5 @@
 <script setup lang="ts">
   const route = useRoute();
-  // add comment
 
   const isActive = (path: string) => route.path === path;
 </script>
