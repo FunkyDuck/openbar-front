@@ -8,11 +8,11 @@
   <header class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
     <div class="container mx-auto px-4 h-16 flex items-center justify-between">
       <NuxtLink to="/" class="flex items-center gap-3 group select-none">
-<!--        <img-->
-<!--            src="/logo.png"-->
-<!--            alt="Logo Open Bar"-->
-<!--            class="h-10 w-auto object-contain transition-transform duration-300 group-hover:scale-105"-->
-<!--        />-->
+        <img
+            src="/logo-v1.svg"
+            alt="Logo Open Bar"
+            class="h-10 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
+        />
 
         <span class="text-xl font-bold tracking-tight text-slate-900 group-hover:text-amber-600 transition-colors duration-300">
           Open Bar
