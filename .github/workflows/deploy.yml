@@ -1,8 +1,9 @@
-name: Deploy to VPS (Structure Custom)
+name: Deploy to VPS
 
 on:
   push:
-    branches: [ "master" ]
+    branches: [ "main" ]
+  workflow_dispatch:
 
 jobs:
   deploy:
@@ -19,9 +20,10 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 22
           source: "."
-          # On envoie tout le code dans le dossier FRONT
+          # CIBLE EXACTE : Vérifie que c'est bien vps-1-sites
           target: "/vps-1-sites/open-bar-front"
-          rm: false
+          # Important : Si le dossier existe, on écrase.
+          rm: true
 
       - name: 🚀 Mise en place Orchestrator & Build
         uses: appleboy/ssh-action@master
@@ -31,22 +33,21 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 22
           script: |
-            # 1. On s'assure que les dossiers existent
-            mkdir -p /vps-1-sites/openbar-orchestrator
-            mkdir -p /vps-1-sites/openbar-front
+            # 1. On s'assure que les dossiers existent (au cas où rm: true a tout cassé)
+            mkdir -p /vps-1-sites/open-bar-orchestrator
+            # Note : scp a déjà recréé le dossier front s'il l'avait supprimé
 
-            # 2. On déplace le docker-compose.yml du dossier Front vers Orchestrator
-            # (Car git l'a déposé dans Front avec le reste du code)
-            cp /vps-1-sites/openbar-front/docker-compose.yml /vps-1-sites/openbar-orchestrator/docker-compose.yml
+            # 2. On remet le docker-compose au bon endroit (car scp l'a mis dans front)
+            cp /vps-1-sites/open-bar-front/docker-compose.yml /vps-1-sites/open-bar-orchestrator/docker-compose.yml
             
-            # 3. On va dans le dossier Orchestrator pour lancer les commandes
-            cd /vps-1-sites/openbar-orchestrator
+            # 3. On va dans le dossier Orchestrator
+            cd /vps-1-sites/open-bar-orchestrator
 
-            # 4. On crée le dossier de données s'il n'existe pas
+            # 4. On s'assure que les données existent
             mkdir -p openbar_data
 
-            # 5. On lance le build
-            # Docker va lire "context: ../openbar-front" et trouvera les fichiers !
+            # 5. Build & Start
+            # Le --build est crucial ici
             docker compose up -d --build --remove-orphans
             
             # Nettoyage
