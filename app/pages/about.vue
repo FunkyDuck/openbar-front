@@ -1,7 +1,6 @@
 <template>
   <div class="container mx-auto px-4 py-12 max-w-3xl">
 
-    <!-- Intro -->
     <div class="text-center mb-12">
       <span class="text-6xl mb-4 block">🌍</span>
       <h1 class="text-4xl font-bold text-slate-900 mb-4">Le carnet de voyage liquide</h1>
@@ -12,7 +11,6 @@
 
     <div class="prose prose-slate max-w-none space-y-10">
 
-      <!-- La Mission -->
       <section>
         <h2 class="text-2xl font-bold text-slate-800 mb-4">Pourquoi Open Bar ?</h2>
         <p>
@@ -25,7 +23,6 @@
         </p>
       </section>
 
-      <!-- La Tech -->
       <section class="bg-slate-100 p-6 rounded-2xl">
         <h2 class="text-2xl font-bold text-slate-800 mb-4 flex items-center gap-2">
           <span>💻</span> Sous le capot
@@ -53,7 +50,6 @@
         </ul>
       </section>
 
-      <!-- L'Auteur -->
       <section class="flex flex-col sm:flex-row items-center gap-6 border-t border-slate-200 pt-8">
         <div class="flex-1 text-center sm:text-left">
           <h3 class="text-lg font-bold text-slate-900">Développé par FunkyDuck</h3>

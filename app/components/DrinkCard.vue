@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import type { Drink } from '~/types/drink';
 
-// On définit ce que le composant reçoit comme données
 defineProps<{
   drink: Drink
 }>()
@@ -11,7 +10,6 @@ defineProps<{
   <NuxtLink
       :to="`/drinks/${drink.id}`"
       class="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden border border-slate-100">
-    <!-- Image (Zone haute) -->
     <div class="h-48 bg-slate-100 relative overflow-hidden group">
       <img
           v-if="drink.imageUrl"
@@ -19,13 +17,11 @@ defineProps<{
           :alt="drink.name"
           class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
       />
-      <!-- Badge Type en haut à gauche -->
       <span class="absolute top-3 left-3 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-md text-xs font-bold text-slate-700 uppercase tracking-wider">
             {{ drink.type }}
         </span>
     </div>
 
-    <!-- Contenu (Zone basse) -->
     <div class="p-5">
       <div class="flex justify-between items-start mb-2">
         <div>
@@ -44,7 +40,6 @@ defineProps<{
         {{ drink.description }}
       </p>
 
-      <!-- Tags -->
       <div class="flex flex-wrap gap-2 mt-auto">
         <span
             v-for="tag in drink.tags"

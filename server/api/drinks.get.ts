@@ -20,6 +20,7 @@ export default defineEventHandler(async (event): Promise<Drink[]> => {
             type: res.type as Drink['type'],
             country: res.country,
             region: res.region,
+            countryCode: res.countrycode,
             flag: res.flag,
             degree: res.degree,
             tags: res.tags || [],

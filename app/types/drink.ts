@@ -4,6 +4,7 @@ export interface Drink {
     type: 'Beer' | 'Wine' | 'Spirit' | 'FruitBrandy' | 'Liqueur' | 'CiderAndFermented' | 'Other';
     country: string;
     region: string;
+    countryCode?: string;
     flag: string;
     degree: number;
     tags: string[];

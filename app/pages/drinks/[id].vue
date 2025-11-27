@@ -1,19 +1,67 @@
 <script setup lang="ts">
 import type { Drink } from '~/types/drink';
-import { LMap, LTileLayer, LMarker } from "@vue-leaflet/vue-leaflet";
+import { LMap, LTileLayer, LMarker, LGeoJson } from "@vue-leaflet/vue-leaflet";
 import "leaflet/dist/leaflet.css";
 
 const route = useRoute();
 const router = useRouter();
-
 const drinkId = route.params.id as string;
 
 const { data: drink, pending, error } = await useFetch<Drink>(`/api/drinks/${drinkId}`, {
   key: `drink-${drinkId}`
 });
 
-// Centre de la carte par défaut (Europe)
-const mapCenter = [47, 2];
+const geoJsonData = ref(null);
+const mapRef = ref(null);
+
+const onGeoJsonReady = (leafletLayer: any) => {
+
+  if (leafletLayer) {
+
+    leafletLayer.setStyle({
+      color: '#d97706',
+      weight: 2,
+      opacity: 1,
+      fillColor: '#fbbf24',
+      fillOpacity: 0.4
+    });
+
+    // Récupère les limites du pays et zoom dessus
+    const bounds = leafletLayer.getBounds();
+    if (mapRef.value) {
+      // @ts-ignore
+      mapRef.value.leafletObject.fitBounds(bounds, {
+        padding: [50, 50],
+        maxZoom: 6
+      });
+    }
+  }
+};
+
+const fetchCountryShape = async () => {
+  if (!drink.value?.countryCode) return;
+
+  try {
+    const code = drink.value.countryCode.toUpperCase();
+    // Récupère le tracé du pays
+    const response = await fetch(`https://raw.githubusercontent.com/johan/world.geo.json/master/countries/${code}.geo.json`);
+
+    if (response.ok) {
+      const data = await response.json();
+      geoJsonData.value = data;
+    }
+  } catch (e) {
+    console.error("Erreur chargement GeoJSON", e);
+  }
+};
+
+watchEffect(() => {
+  if (drink.value) {
+    fetchCountryShape();
+  }
+});
+
+const mapCenter = [47, 20]; // Centre par défaut (Europe)
 const mapZoom = 4;
 
 const goBack = () => router.back();
@@ -22,10 +70,7 @@ const goBack = () => router.back();
 <template>
   <div class="container mx-auto px-4 py-8 max-w-5xl">
 
-    <button
-        @click="goBack"
-        class="mb-6 flex items-center gap-2 text-slate-500 hover:text-amber-600 transition-colors font-medium"
-    >
+    <button @click="goBack" class="mb-6 flex items-center gap-2 text-slate-500 hover:text-amber-600 transition-colors font-medium">
       <span>←</span> Retour à la cave
     </button>
 
@@ -36,21 +81,18 @@ const goBack = () => router.back();
 
     <div v-else-if="error || !drink" class="bg-red-50 p-8 rounded-xl text-center border border-red-100">
       <h2 class="text-xl font-bold text-red-700 mb-2">Bouteille introuvable</h2>
-      <p class="text-red-500 mb-4">Impossible de récupérer les informations de cette boisson.</p>
-      <NuxtLink to="/" class="text-sm font-bold text-red-700 hover:underline">Retour à l'accueil</NuxtLink>
+      <NuxtLink to="/" class="text-sm font-bold text-red-700 hover:underline mt-2 inline-block">Retour à l'accueil</NuxtLink>
     </div>
 
     <article v-else class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
 
-      <!-- BLOC 1 : IDENTITY -->
       <section class="grid grid-cols-1 md:grid-cols-2">
-
-        <div class="relative h-[400px] md:h-[500px] bg-slate-50 flex items-center justify-center p-8 group">
+        <div class="relative h-[400px] md:h-[500px] bg-slate-50 flex items-center justify-center p-8">
           <img
               v-if="drink.imageUrl"
               :src="drink.imageUrl"
               :alt="drink.name"
-              class="max-h-full max-w-full object-contain drop-shadow-xl mix-blend-multiply transition-transform duration-500 group-hover:scale-105"
+              class="max-h-full max-w-full object-contain drop-shadow-xl mix-blend-multiply transition-transform duration-500 hover:scale-105"
           />
           <span v-else class="text-6xl opacity-20">🍷</span>
         </div>
@@ -79,11 +121,7 @@ const goBack = () => router.back();
           <div v-if="drink.tags && drink.tags.length">
             <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Profil</h3>
             <ul class="flex flex-wrap gap-2">
-              <li
-                  v-for="tag in drink.tags"
-                  :key="tag"
-                  class="px-3 py-1 border border-slate-200 rounded-lg text-sm text-slate-600 italic"
-              >
+              <li v-for="tag in drink.tags" :key="tag" class="px-3 py-1 border border-slate-200 rounded-lg text-sm text-slate-600 italic">
                 #{{ tag }}
               </li>
             </ul>
@@ -91,37 +129,29 @@ const goBack = () => router.back();
         </div>
       </section>
 
-      <!-- BLOC 2 :: Story -->
       <section class="px-8 md:px-12 py-12 border-t border-slate-100 max-w-3xl mx-auto">
-        <h2 class="text-2xl font-bold text-slate-800 mb-6 flex items-center gap-3">
-          <span>📖</span> L'Histoire
-        </h2>
-        <div class="prose prose-slate prose-lg text-slate-600 leading-relaxed">
-          <p class="whitespace-pre-line">
-            {{ drink.description || "Aucune description n'a encore été rédigée pour cet alcool." }}
-          </p>
-        </div>
+        <h2 class="text-2xl font-bold text-slate-800 mb-6 flex items-center gap-3"><span>📖</span> L'Histoire</h2>
+        <p class="prose prose-slate prose-lg text-slate-600 leading-relaxed whitespace-pre-line">
+          {{ drink.description || "Aucune description disponible." }}
+        </p>
       </section>
 
-      <!-- BLOC 3 :: MAP -->
       <section class="grid grid-cols-1 lg:grid-cols-3 border-t border-slate-100">
         <div class="p-8 md:p-12 bg-amber-50/50 flex flex-col justify-center border-b lg:border-b-0 lg:border-r border-slate-100">
-          <h3 class="text-amber-900 font-bold text-xl mb-4 flex items-center gap-2">
-            <span>📍</span> Origine
-          </h3>
-          <p class="text-slate-700 mb-2">
-            Ce produit est originaire de <strong>{{ drink.country }}</strong>.
-          </p>
-          <p v-if="drink.region" class="text-slate-600 text-sm">
-            Plus précisément de la région : <strong class="text-amber-700">{{ drink.region }}</strong>.
-          </p>
+          <h3 class="text-amber-900 font-bold text-xl mb-4 flex items-center gap-2"><span>📍</span> Origine</h3>
+          <p class="text-slate-700 mb-2">Origine : <strong>{{ drink.country }}</strong></p>
+          <p v-if="drink.region" class="text-slate-600 text-sm">Région : <strong class="text-amber-700">{{ drink.region }}</strong></p>
+
+          <div v-if="!drink.countryCode" class="mt-4 p-3 bg-red-100 text-red-700 text-xs rounded border border-red-200">
+            ⚠️ Carte indisponible (Code Pays ISO manquant).
+          </div>
         </div>
 
-        <div class="col-span-2 h-80 lg:h-auto relative z-0 bg-slate-100">
+        <div class="col-span-2 h-80 lg:h-[500px] relative z-0 bg-slate-100">
           <ClientOnly>
             <LMap
-                ref="map"
-                :zoom="mapZoom"
+                ref="mapRef"
+                :zoom="3"
                 :center="mapCenter"
                 :use-global-leaflet="false"
                 class="h-full w-full"
@@ -130,13 +160,14 @@ const goBack = () => router.back();
                   url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
                   attribution="&copy; OpenStreetMap contributors"
               />
-              <LMarker :lat-lng="mapCenter" />
+              <LGeoJson
+                  v-if="geoJsonData"
+                  :geojson="geoJsonData"
+                  @ready="onGeoJsonReady"
+              />
             </LMap>
-
             <template #fallback>
-              <div class="h-full w-full flex items-center justify-center text-slate-400 bg-slate-50">
-                Chargement de la carte...
-              </div>
+              <div class="h-full w-full flex items-center justify-center text-slate-400 bg-slate-50">Chargement carte...</div>
             </template>
           </ClientOnly>
         </div>
@@ -147,7 +178,5 @@ const goBack = () => router.back();
 </template>
 
 <style scoped>
-.leaflet-container {
-  background: #f1f5f9;
-}
+.leaflet-container { background: #f1f5f9; z-index: 0; }
 </style>

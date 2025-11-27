@@ -5,7 +5,6 @@
 
     <div class="space-y-8 text-slate-600 leading-relaxed">
 
-      <!-- Clause vitale pour l'alcool -->
       <section class="bg-amber-50 p-6 rounded-xl border-l-4 border-amber-500">
         <h2 class="text-lg font-bold text-amber-800 mb-2 flex items-center gap-2">
           ⚠️ Avertissement Sanitaire & Légal

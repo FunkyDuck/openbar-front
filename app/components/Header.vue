@@ -14,7 +14,6 @@
 <!--            class="h-10 w-auto object-contain transition-transform duration-300 group-hover:scale-105"-->
 <!--        />-->
 
-        <!-- TITRE (Optionnel si ton logo contient déjà le texte) -->
         <span class="text-xl font-bold tracking-tight text-slate-900 group-hover:text-amber-600 transition-colors duration-300">
           Open Bar
         </span>
@@ -33,10 +32,10 @@
         <NuxtLink
             to="/map"
             class="text-sm font-medium transition-color relative py-1"
-            :class="isActive('/') ? 'text-amber-600 font-bold' : 'text-slate-600 hover:text-amber-600'"
+            :class="isActive('/map') ? 'text-amber-600 font-bold' : 'text-slate-600 hover:text-amber-600'"
         >
           Carte
-          <span v-if="isActive('/')" class="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-amber-600 rounded-full"></span>
+          <span v-if="isActive('/map')" class="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-amber-600 rounded-full"></span>
         </NuxtLink>
       </nav>
 
