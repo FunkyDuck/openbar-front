@@ -1,4 +1,4 @@
-name: Deploy to VPS
+name: Deploy to VPS (Opt Docker)
 
 on:
   push:
@@ -20,9 +20,8 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 22
           source: "."
-          # CIBLE EXACTE : Vérifie que c'est bien vps-1-sites
-          target: "/vps-1-sites/open-bar-front"
-          # Important : Si le dossier existe, on écrase.
+          # CIBLE EXACTE : Correction du nom de dossier (sans tiret)
+          target: "/opt/docker/vps-1-sites/openbar-front"
           rm: true
 
       - name: 🚀 Mise en place Orchestrator & Build
@@ -33,21 +32,27 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 22
           script: |
-            # 1. On s'assure que les dossiers existent (au cas où rm: true a tout cassé)
-            mkdir -p /vps-1-sites/open-bar-orchestrator
-            # Note : scp a déjà recréé le dossier front s'il l'avait supprimé
-
-            # 2. On remet le docker-compose au bon endroit (car scp l'a mis dans front)
-            cp /vps-1-sites/open-bar-front/docker-compose.yml /vps-1-sites/open-bar-orchestrator/docker-compose.yml
+            # Définition de la racine de travail EXACTE
+            WORK_DIR="/opt/docker/vps-1-sites"
             
-            # 3. On va dans le dossier Orchestrator
-            cd /vps-1-sites/open-bar-orchestrator
+            # Correction des noms de dossiers (sans tiret)
+            ORCHESTRATOR="$WORK_DIR/openbar-orchestrator"
+            FRONT="$WORK_DIR/openbar-front"
 
-            # 4. On s'assure que les données existent
+            # 1. Création de la structure (si pas déjà là)
+            # Note : Ton user SSH doit avoir les droits d'écriture dans /opt/docker/vps-1-sites
+            mkdir -p $ORCHESTRATOR
+            
+            # 2. Copie du docker-compose vers l'orchestrateur
+            cp $FRONT/docker-compose.yml $ORCHESTRATOR/docker-compose.yml
+            
+            # 3. On se déplace dans le dossier Orchestrator
+            cd $ORCHESTRATOR
+
+            # 4. Dossier de données
             mkdir -p openbar_data
 
-            # 5. Build & Start
-            # Le --build est crucial ici
+            # 5. Lancement
             docker compose up -d --build --remove-orphans
             
             # Nettoyage
