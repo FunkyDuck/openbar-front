@@ -50,7 +50,7 @@ jobs:
             cd $ORCHESTRATOR
 
             # 4. Dossier de données
-            mkdir -p openbar_data
+            mkdir -p openbar-data
 
             # 5. Lancement
             docker compose up -d --build --remove-orphans
